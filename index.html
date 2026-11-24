@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Butterfly · The diary app for cleaners · Organise your day, your way</title>
+<meta name="description" content="The diary app for your bookings, clients, mileage and money. Built by Amy, a cleaner from Astley, for small cleaning businesses like yours. 30 days free, no card required.">
+<link rel="canonical" href="https://butterflyapp.co.uk/">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#FBF7F4">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://butterflyapp.co.uk/">
+<meta property="og:title" content="Butterfly · Organise your day, your way">
+<meta property="og:description" content="The diary app for your bookings, clients, mileage and money. Built by a cleaner, for cleaners. 30 days free, no card required.">
+<meta property="og:image" content="https://butterflyapp.co.uk/assets/share.png">
+<meta name="twitter:card" content="summary">
+<!-- Fonts load from Google, the same as the Butterfly app. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Allura&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7F4; --ink:#34323A; --pink:#E88BB5; --rose:#B4447A;
+    --silver:#C6C6CE; --quiet:#6E6A78;
+    --margin:clamp(20px,7vw,96px);
+    --f-head:'Playfair Display',Georgia,serif; --f-script:'Allura',cursive; --f-body:'Montserrat',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-weight:400;-webkit-font-smoothing:antialiased}
+  #wash{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.35;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .page{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;overflow-x:clip}
+
+  /* planner header */
+  header{display:flex;align-items:center;justify-content:space-between;padding:22px var(--margin) 0 calc(var(--margin) + 28px)}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:var(--f-head);font-size:22px;font-weight:600;letter-spacing:.01em}
+  .brand img{width:34px;height:auto}
+  header nav{display:flex;gap:28px;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+  header nav a{color:var(--quiet);text-decoration:none}
+  header nav a:hover,header nav a:focus-visible{color:var(--ink)}
+
+  /* hero */
+  .hero{flex:1;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:center;gap:clamp(24px,5vw,80px);
+    padding:clamp(28px,6vh,72px) var(--margin) clamp(40px,8vh,96px) calc(var(--margin) + 28px);position:relative}
+  .margin-note{position:absolute;left:calc(var(--margin) - 84px);top:clamp(36px,7vh,80px);width:70px;text-align:right;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);line-height:1.6}
+  .margin-note b{display:block;font-family:var(--f-head);font-size:28px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:500}
+  .kicker{font-family:var(--f-head);font-style:italic;font-size:clamp(19px,1.7vw,24px);color:var(--rose);margin:0 0 14px;line-height:1.3}
+  .today{display:none;margin:0;text-align:right;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);line-height:1.3}
+  .today b{display:block;font-family:var(--f-head);font-size:17px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:500}
+  h1{font-family:var(--f-head);font-weight:500;font-size:clamp(46px,7.2vw,104px);line-height:.98;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{font-style:italic;color:var(--rose)}
+  .lede{max-width:34ch;font-size:clamp(16px,1.25vw,18px);line-height:1.7;font-weight:300;margin:28px 0 34px}
+  .lede strong{font-weight:500}
+  .cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:16px 28px}
+  .btn{position:relative;display:inline-flex;align-items:center;gap:12px;background:var(--ink);color:var(--paper);text-decoration:none;
+    padding:18px 30px;border-radius:999px;font-weight:500;font-size:15px;letter-spacing:.02em;transition:transform .3s ease,box-shadow .3s ease}
+  .btn svg{width:16px;height:16px;fill:var(--pink);flex:none;transition:transform .3s ease}
+  .btn:hover svg,.btn:focus-visible svg{transform:scale(1.15)}
+  .amy .sig{display:inline-flex;align-items:center;gap:4px}
+  .amy .sig img{width:26px;height:auto;margin-top:-6px}
+  .btn:hover,.btn:focus-visible{transform:translateY(-2px);box-shadow:0 14px 30px -14px rgba(42,31,45,.55)}
+  .btn:focus-visible,.link:focus-visible,nav a:focus-visible{outline:2px solid var(--rose);outline-offset:4px}
+  .link{color:var(--ink);font-size:15px;text-decoration:none;border-bottom:1px solid var(--silver);padding-bottom:3px}
+  .link:hover{border-color:var(--rose)}
+  /* the butterfly that lands on where we want people to go */
+  .perch{position:relative}
+  .lander{position:absolute;right:-20px;top:-24px;width:30px;pointer-events:none;
+    animation:land 1s cubic-bezier(.2,.7,.3,1) 1.4s both}
+  .lander img{display:block;width:100%;height:auto;transform-origin:45% 60%;
+    animation:flutter .11s ease-in-out 1.4s 10 alternate,rest 8s ease-in-out 2.6s infinite}
+  .perch:hover .lander img,.perch:focus-visible .lander img{animation:flutter .16s ease-in-out 0s 4 alternate}
+  @keyframes land{
+    0%{opacity:0;transform:translate(90px,-110px) rotate(25deg) scale(.7)}
+    60%{opacity:1;transform:translate(-6px,4px) rotate(-6deg) scale(1)}
+    100%{opacity:1;transform:none}
+  }
+  @keyframes flutter{to{transform:scaleX(.35) rotate(-4deg)}}
+  /* at rest: a quick flutter every few seconds, then still */
+  @keyframes rest{0%,9%,100%{transform:none}1.25%,3.75%,6.25%{transform:scaleX(.35) rotate(-4deg)}2.5%,5%,7.5%{transform:none}}
+  /* a butterfly that waits until its section is in view */
+  .lander.later{animation-delay:.3s;animation-play-state:paused}
+  .lander.later img{animation-delay:.3s,1.5s;animation-play-state:paused}
+  .lander.later.go,.lander.later.go img{animation-play-state:running}
+  .btn .lander{right:-12px;top:-22px}
+
+  /* Price: one plan, written like a diary entry */
+  .price{position:relative;padding:clamp(64px,10vh,120px) var(--margin) clamp(64px,10vh,110px) calc(var(--margin) + 28px)}
+  .price .head{max-width:640px;margin-bottom:clamp(28px,5vh,48px)}
+  .price .head p{font-size:16px;line-height:1.7;font-weight:300;margin:16px 0 0;max-width:46ch}
+  .promise{margin-top:24px;max-width:560px;padding:18px 22px 16px;border-left:2px solid var(--pink);background:rgba(255,255,255,.55);border-radius:0 14px 14px 0}
+  .price .head .promise p{margin:0;font-size:15px;line-height:1.7;max-width:none}
+  .promise b{font-weight:600}
+  .price .head .promise .sig{margin-top:10px;font-family:var(--f-head);font-style:italic;font-size:17px;color:var(--rose)}
+  .promise .sig span{font-family:var(--f-script);font-style:normal;font-size:30px;margin-left:8px;vertical-align:-4px}
+  /* full-width bands that break the price section up */
+  .band{margin:clamp(36px,6vw,64px) calc(var(--margin) * -1) clamp(36px,6vw,64px) calc(var(--margin) * -1 - 28px);
+    padding:clamp(36px,6vw,64px) var(--margin) clamp(36px,6vw,64px) calc(var(--margin) + 28px)}
+  .offer-band{background:linear-gradient(120deg,#34323A 0%,#3E3542 60%,#4A3446 100%);color:#FBF7F4;display:grid;grid-template-columns:minmax(0,1.3fr) auto;gap:28px 56px;align-items:center;position:relative;overflow:hidden}
+  .offer-band::after{content:"";position:absolute;right:-120px;top:-140px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(232,139,181,.35),transparent 65%);pointer-events:none}
+  .offer-band > *{position:relative;z-index:1}
+  .offer-band .tag{position:static;display:inline-block;background:rgba(232,139,181,.22);color:#F7C9DD;margin-bottom:14px}
+  .offer-band h3{font-family:var(--f-head);font-weight:500;font-size:clamp(30px,3.8vw,50px);line-height:1.08;margin:0 0 14px;color:#fff;text-wrap:balance}
+  .offer-price{margin:0 0 14px;font-family:var(--f-head);font-size:clamp(34px,4vw,52px);line-height:1}
+  .offer-price s{font-size:.55em;color:rgba(251,247,244,.55);text-decoration-thickness:2px;text-decoration-color:var(--pink);margin-right:10px}
+  .offer-price b{font-weight:500;color:var(--pink)}
+  .offer-price small{font-family:var(--f-body);font-size:15px;color:rgba(251,247,244,.75);margin-left:6px}
+  .offer-copy p:last-child{margin:0;max-width:52ch;font-size:16px;line-height:1.7;font-weight:300;color:rgba(251,247,244,.88)}
+  .btn.pinkbtn{background:var(--pink);color:#2E2430}
+  .btn.pinkbtn svg{fill:#fff}
+  .btn.pinkbtn:focus-visible{outline-color:#fff}
+  .tiers.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .promise-band{background:linear-gradient(120deg,#F3EDFA 0%,#FBEFF4 55%,#FFF6EA 100%);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:24px 64px;align-items:start;margin-bottom:0}
+  .promise-head img{width:46px;height:auto;margin-bottom:10px}
+  .promise-head h3{font-family:var(--f-head);font-weight:500;font-size:clamp(30px,3.8vw,50px);line-height:1.08;margin:0;text-wrap:balance}
+  .promise-head h3 em{color:var(--rose)}
+  .promise-copy > p:first-child{margin:0;font-size:17px;line-height:1.75;font-weight:300;max-width:52ch}
+  .vows{list-style:none;margin:20px 0 0;padding:0}
+  .vows li{position:relative;padding:8px 0 8px 34px;font-size:15px;font-weight:500;border-top:1px solid rgba(180,68,122,.15)}
+  .vows li:last-child{border-bottom:1px solid rgba(180,68,122,.15)}
+  .vows li::before{content:"";position:absolute;left:0;top:9px;width:22px;height:19px;background:url(assets/butterfly.png) center/contain no-repeat}
+  .promise-copy .sig{margin:20px 0 0;font-family:var(--f-head);font-style:italic;font-size:18px;color:var(--rose)}
+  .promise-copy .sig span{font-family:var(--f-script);font-style:normal;font-size:32px;margin-left:8px;vertical-align:-5px}
+  /* free trial first, with the no-card promise highlighted */
+  .free-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;padding-bottom:clamp(20px,3vw,28px);border-bottom:1px solid #EEE9EE}
+  .free-top .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);margin:0 0 8px}
+  .free-top .amount{font-family:var(--f-head);font-weight:500;font-size:clamp(48px,5.6vw,72px);line-height:.95;margin:0}
+  .nocard{margin:0;padding:14px 20px;border-radius:16px;background:#FBE7F0;color:var(--ink);font-size:15px;line-height:1.5;max-width:34ch}
+  .nocard b{color:var(--rose);font-weight:600}
+  .entry .included{border-top:0;margin-top:clamp(22px,3vw,30px);padding-top:0}
+  .included .ticks li::before{content:"";position:absolute;left:3px;top:10px;width:6px;height:11px;border:solid var(--rose);border-width:0 2.2px 2.2px 0;border-radius:0;background:none;transform:rotate(45deg);opacity:1}
+  .offer-fine{margin:16px 0 0 !important;font-size:12.5px !important;line-height:1.6 !important;color:rgba(251,247,244,.6) !important}
+  .offer-pay{margin:18px 0 0 !important;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid rgba(232,139,181,.28);font-size:14px !important;line-height:1.6 !important;color:rgba(251,247,244,.9) !important;max-width:56ch}
+  .offer-pay b{color:#F7C9DD;font-weight:600}
+  .offer-leave{margin:14px 0 0 !important;font-size:14px !important;line-height:1.65 !important;color:rgba(251,247,244,.82) !important;max-width:56ch}
+  .offer-leave b{color:#fff;font-weight:600}
+  .offer-cta{text-align:center}
+  .offer-nocard{margin:12px 0 0;font-size:13px;letter-spacing:.06em;color:#F7C9DD}
+  /* Amy's story */
+  .story{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,6vw,80px);align-items:center;padding:clamp(64px,10vh,120px) var(--margin) clamp(40px,8vh,80px) calc(var(--margin) + 28px);position:relative}
+  .story-photo{margin:0;justify-self:center;width:min(100%,340px);transform:rotate(-3deg)}
+  .story-photo .oval{aspect-ratio:3/4;border-radius:50%;overflow:hidden;border:8px solid #fff;box-shadow:0 40px 60px -40px rgba(52,50,58,.5)}
+  .story-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block}
+  .story-photo figcaption{text-align:center;margin-top:6px}
+  .story-photo .sig{font-family:var(--f-script);font-size:44px;color:var(--rose);display:inline-flex;align-items:center;gap:6px;line-height:1}
+  .story-photo .sig img{width:34px;height:auto;margin-top:-10px}
+  .story-photo small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);margin-top:4px}
+  .story-copy .intro{font-size:18px;line-height:1.6;margin:18px 0 22px;font-weight:400}
+  .story blockquote{margin:0;padding:0 0 0 22px;border-left:2px solid var(--pink)}
+  .story blockquote p{font-size:16px;line-height:1.75;font-weight:300;margin:0 0 14px;max-width:58ch}
+  .story .pull{font-family:var(--f-head);font-style:italic;font-size:clamp(22px,2.4vw,30px);line-height:1.3;color:var(--rose);margin:22px 0 22px;max-width:28ch}
+  /* Questions */
+  .faq{padding:clamp(64px,10vh,110px) var(--margin) clamp(48px,8vh,90px) calc(var(--margin) + 28px);display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);gap:24px clamp(28px,6vw,80px);align-items:start}
+  .faq-list details{border-top:1px solid rgba(198,198,206,.8);padding:4px 0}
+  .faq-list details:last-child{border-bottom:1px solid rgba(198,198,206,.8)}
+  .faq-list summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 0;font-family:var(--f-head);font-size:clamp(18px,1.8vw,21px);font-weight:500}
+  .faq-list summary::-webkit-details-marker{display:none}
+  .faq-list summary::after{content:"+";font-family:var(--f-body);font-weight:300;font-size:26px;color:var(--rose);line-height:1;transition:transform .25s ease}
+  .faq-list details[open] summary::after{transform:rotate(45deg)}
+  .faq-list summary:focus-visible{outline:2px solid var(--rose);outline-offset:4px;border-radius:6px}
+  .faq-list details p{margin:0 0 18px;font-size:16px;line-height:1.75;font-weight:300;max-width:62ch}
+  /* Footer */
+  .foot{border-top:1px solid rgba(198,198,206,.8);padding:40px var(--margin) 36px calc(var(--margin) + 28px);display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,1.4fr);gap:20px 40px;align-items:start;background:rgba(255,255,255,.5)}
+  .foot-brand p{margin:10px 0 0;font-size:14px;color:var(--quiet);max-width:40ch;line-height:1.6}
+  .foot-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px 22px;font-size:14px}
+  .foot-links a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--silver);padding-bottom:2px}
+  .foot-links a:hover,.foot-links a:focus-visible{border-color:var(--rose)}
+  .foot-small{grid-column:1/-1;margin:8px 0 0;font-size:12px;color:var(--quiet)}
+  @media (max-width:860px){
+    .story,.faq{grid-template-columns:1fr;padding-left:var(--margin)}
+    .story-photo{width:min(70%,260px)}
+    .foot{grid-template-columns:1fr;padding-left:var(--margin)}
+    .foot-links{justify-content:flex-start}
+  }
+  .entry{position:relative;max-width:980px;background:#fff;border-radius:22px;padding:clamp(26px,4vw,48px) clamp(22px,4vw,52px) clamp(26px,4vw,44px) clamp(44px,6vw,84px);
+    box-shadow:0 40px 60px -44px rgba(52,50,58,.45),0 0 0 1px #EEE9EE;transform:rotate(-.4deg)}
+  .entry::before{content:"";position:absolute;top:0;bottom:0;left:clamp(26px,4vw,56px);width:1px;background:rgba(232,139,181,.55)}
+  .entry .date{position:absolute;left:0;top:clamp(26px,4vw,48px);width:clamp(26px,4vw,56px);text-align:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);writing-mode:vertical-rl;transform:rotate(180deg)}
+  .tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+  .tier{padding:6px clamp(14px,2.4vw,30px) 8px}
+  .tier + .tier{border-left:1px dashed #D8D3DD}
+  .tier:first-child{padding-left:0}
+  .tier .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);margin:0 0 10px}
+  .tier .amount{font-family:var(--f-head);font-weight:500;font-size:clamp(38px,4vw,54px);line-height:1;margin:0;color:var(--ink)}
+  .tier .amount small{font-family:var(--f-body);font-size:14px;font-weight:400;color:var(--quiet);margin-left:4px}
+  .tier .note{font-size:14px;line-height:1.55;color:var(--ink);font-weight:300;margin:12px 0 0}
+  .tier.offer .amount{color:var(--rose)}
+  .tier.offer{position:relative}
+  .tag{position:absolute;top:-24px;left:clamp(14px,2.4vw,30px);font-size:10px;letter-spacing:.12em;text-transform:uppercase;background:#FBE7F0;color:var(--rose);padding:4px 10px;border-radius:99px}
+  .included{margin:clamp(28px,4vw,40px) 0 0;padding:clamp(22px,3vw,30px) 0 0;border-top:1px solid #EEE9EE}
+  .included h3{font-family:var(--f-head);font-weight:500;font-size:22px;margin:0 0 14px}
+  .included ul{list-style:none;margin:0;padding:0;columns:2;column-gap:36px}
+  .included li{break-inside:avoid;font-size:14.5px;line-height:1.5;padding:6px 0 6px 24px;position:relative;font-weight:300}
+  .included li b{font-weight:500}
+  .included li::before{content:"";position:absolute;left:2px;top:12px;width:9px;height:9px;border-radius:50%;background:var(--pink);opacity:.8}
+  .entry .cta-row{margin-top:clamp(26px,3.6vw,38px)}
+  .fine{margin:22px 0 0;font-size:13px;line-height:1.7;color:var(--quiet);max-width:70ch}
+  .fine b{color:var(--ink);font-weight:500}
+  .small{margin:18px 0 0;font-size:13px;color:var(--quiet);letter-spacing:.01em}
+
+  /* the "desk": phone + Amy */
+  .desk{position:relative;justify-self:center;width:min(100%,430px);aspect-ratio:430/560}
+  .phone{position:absolute;right:4%;top:0;width:66%;aspect-ratio:9/18.5;background:#fff;border-radius:34px;
+    border:1px solid #E7E2E6;box-shadow:0 40px 60px -40px rgba(42,31,45,.45),0 2px 0 #fff inset;transform:rotate(3deg);padding:18px 14px;overflow:hidden}
+  .phone .bar{display:flex;justify-content:space-between;align-items:baseline;margin:6px 4px 14px}
+  .phone .bar b{font-family:var(--f-head);font-size:17px;font-weight:600}
+  .phone .bar span{font-size:10px;color:var(--quiet);letter-spacing:.08em;text-transform:uppercase}
+  .week{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:14px}
+  .week div{text-align:center;font-size:9px;color:var(--quiet);padding:6px 0;border-radius:10px}
+  .week div b{display:block;font-size:13px;color:var(--ink);font-weight:500}
+  .week .on{background:#FBE7F0}
+  .slot{display:grid;grid-template-columns:34px 1fr;gap:8px;padding:9px 4px;border-top:1px solid #F0ECEF;font-size:10.5px;line-height:1.35}
+  .slot time{color:var(--quiet);font-size:9.5px;padding-top:1px}
+  .slot b{font-weight:600;display:block}
+  .slot i{font-style:normal;color:var(--quiet)}
+  .slot .tag{display:inline-block;margin-top:4px;font-size:8.5px;padding:2px 7px;border-radius:99px;background:#EEF6F2;color:#2F6B55}
+  .slot .tag.q{background:#F3EEFB;color:#5B4690}
+  .phone .foot{position:absolute;left:14px;right:14px;bottom:16px;display:flex;justify-content:space-between;font-size:9.5px;color:var(--quiet);
+    border-top:1px solid #F0ECEF;padding-top:10px}
+  .phone .foot b{color:var(--ink);font-weight:600}
+  .amy{position:absolute;left:-16%;bottom:-6%;width:40%;transform:rotate(-4deg)}
+  .amy .oval{aspect-ratio:3/4;border-radius:50%;overflow:hidden;border:6px solid #fff;box-shadow:0 30px 50px -30px rgba(42,31,45,.5)}
+  .amy img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block}
+  .amy figcaption{font-family:var(--f-script);font-size:30px;color:var(--rose);text-align:center;margin-top:2px;line-height:1}
+  .amy small{display:block;font-family:var(--f-body);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--quiet);margin-top:4px}
+  .sample-tag{position:absolute;right:0;bottom:-34px;font-size:10px;color:var(--quiet);letter-spacing:.08em;text-transform:uppercase}
+
+  /* the switch strip */
+  .switch{border-top:1px solid rgba(198,198,206,.7);padding:22px var(--margin) 26px calc(var(--margin) + 28px);
+    display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 26px;font-size:14px;color:var(--quiet)}
+  .switch s{text-decoration-color:var(--pink);text-decoration-thickness:1.5px}
+  .switch .to{font-family:var(--f-head);font-style:italic;font-size:20px;color:var(--ink)}
+
+  @media (max-width:860px){
+    header nav{display:none}
+    .today{display:block}
+    header{padding-left:var(--margin);align-items:flex-start}
+    .hero{grid-template-columns:1fr;padding-left:var(--margin)}
+    .margin-note{display:none}
+    .desk{width:min(100%,360px);margin-top:12px}
+    .amy{left:-4%;bottom:-16%;width:36%}
+    .desk{margin-bottom:64px}
+    .sample-tag{bottom:-58px}
+    .kicker{font-size:18px}
+    .lander{top:-16px;right:-24px;width:26px}
+    .desk{margin-bottom:84px}
+  }
+  /* A day with Butterfly */
+  .day{position:relative;padding:clamp(56px,10vh,120px) var(--margin) 72px calc(var(--margin) + 28px)}
+  .day-head{max-width:720px;margin-bottom:clamp(28px,5vh,56px)}
+  h2{font-family:var(--f-head);font-weight:500;font-size:clamp(34px,4.6vw,64px);line-height:1.04;letter-spacing:-.015em;margin:0;text-wrap:balance}
+  h2 em{font-style:italic;color:var(--rose)}
+  .day-grid{display:grid;grid-template-columns:200px minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:start}
+  .times-wrap{position:relative}
+  .times{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+  .times button{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:14px;padding:10px 12px;border-radius:12px;color:var(--quiet);width:100%;box-sizing:border-box}
+  .times time{font-family:var(--f-head);font-size:18px;color:var(--ink);min-width:52px;opacity:.55}
+  .times span{font-size:13px;letter-spacing:.02em}
+  .times button:hover time,.times button:hover span{opacity:1;color:var(--ink)}
+  .times button[aria-selected="true"]{background:rgba(255,255,255,.7);box-shadow:0 1px 0 rgba(198,198,206,.6)}
+  .times button[aria-selected="true"] time{opacity:1;color:var(--rose)}
+  .times button[aria-selected="true"] span{color:var(--ink);font-weight:500}
+  .times button:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+  .hop{position:absolute;left:0;top:0;width:30px;pointer-events:none;z-index:3;will-change:transform}
+  .hop img{display:block;width:100%;height:auto;transform-origin:45% 60%}
+  .hop img{animation:rest 8s ease-in-out 1.2s infinite}
+  .hop.flying img{animation:flutter .11s ease-in-out infinite alternate}
+  .hop.landed img{animation:rest 8s ease-in-out 0s infinite}
+  .stage{position:relative;min-height:380px}
+  .step{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:clamp(24px,4vw,56px);align-items:center;animation:stepIn .35s ease both}
+  /* all steps share one space, so the buttons below never jump */
+  .stage{display:grid}
+  .step{grid-area:1/1}
+  .step[hidden]{display:grid;visibility:hidden}
+  @keyframes stepIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .step h3{font-family:var(--f-head);font-weight:500;font-size:clamp(26px,2.6vw,38px);line-height:1.12;margin:0 0 16px;text-wrap:balance}
+  .step p{font-size:16px;line-height:1.75;font-weight:300;max-width:40ch;margin:0}
+  .phone.mini{position:relative;right:auto;top:auto;width:100%;aspect-ratio:9/12.5;transform:rotate(2deg);padding:18px 16px}
+  .phone.mini .row{display:grid;grid-template-columns:58px 1fr;column-gap:8px;padding:11px 4px;border-top:1px solid #F0ECEF;font-size:11px;line-height:1.35}
+  .phone.mini .row span{color:var(--quiet);font-size:10px;grid-row:span 2;padding-top:1px}
+  .phone.mini .row b{font-weight:600}
+  .phone.mini .row i{font-style:normal;color:var(--quiet);font-size:10px}
+  .phone.mini .pill{margin:16px 4px 0;text-align:center;font-size:11px;font-weight:500;padding:10px;border-radius:99px;background:#FBE7F0;color:var(--rose)}
+  .phone.mini .seg{display:flex;gap:4px;margin:0 4px 8px;padding:3px;background:#F5F1F4;border-radius:99px;font-size:10px}
+  .phone.mini .seg span{flex:1;text-align:center;padding:5px 0;border-radius:99px;color:var(--quiet)}
+  .phone.mini .seg .on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(52,50,58,.12)}
+  .phone.mini .total{margin:14px 4px 0;font-size:11px;color:var(--quiet);display:flex;justify-content:space-between}
+  .phone.mini .total b{color:var(--ink);font-size:13px}
+  .day-nav{display:flex;align-items:center;gap:18px;margin-top:20px;padding-left:calc(200px + clamp(24px,5vw,72px))}
+  .day-nav button{all:unset;cursor:pointer;font-size:15px;padding:14px 22px;border-radius:999px}
+  .day-nav .back{color:var(--quiet)}
+  .day-nav .back[disabled]{opacity:.35;cursor:default}
+  .day-nav .next{background:var(--ink);color:var(--paper);font-weight:500}
+  .day-nav button:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+  .day-nav .count{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--quiet)}
+  .day-nav .count b{color:var(--ink);font-weight:600}
+  .finish[hidden],.day-nav [hidden]{display:none}
+  /* coffee break: a posh cup and a few beans beside the phone */
+  .with-cup{position:relative}
+  .with-cup .cup{position:absolute;left:-200px;bottom:-92px;width:330px;height:auto}
+  /* smaller laptops: tuck the cup under the phone so it never covers the words */
+  @media (min-width:861px) and (max-width:1279px){.with-cup .cup{left:-30px;bottom:-110px;width:220px}}
+    /* Butterfly tip: a small note pinned to the diary page */
+  .tip{display:block;margin-top:22px;max-width:44ch;padding:14px 16px 15px;border-radius:14px;background:#FFF8E6;border:1px solid #F1E2B8;box-shadow:0 10px 20px -16px rgba(52,50,58,.35);transform:rotate(-.6deg)}
+  .tip summary{display:flex;gap:12px;align-items:flex-start;cursor:pointer;list-style:none;font-size:14px;line-height:1.5;color:var(--ink)}
+  .tip summary::-webkit-details-marker{display:none}
+  .tip summary:focus-visible{outline:2px solid var(--rose);outline-offset:4px;border-radius:6px}
+  .tip img{width:26px;height:auto;flex:none;margin-top:1px}
+  .tip b{display:block;font-family:var(--f-head);font-style:italic;font-weight:500;font-size:15px;color:var(--rose);margin-bottom:1px}
+  .tip summary span::after{content:" Read tip";font-size:12px;color:var(--rose);text-decoration:underline;text-underline-offset:3px}
+  .tip[open] summary span::after{content:""}
+  .step .tip p{margin:6px 0 0 38px;font-size:14px;line-height:1.55;font-weight:400;max-width:none;color:var(--ink)}
+  .step .feature{font-weight:500;color:var(--rose)}
+  .tip a{color:var(--rose);text-underline-offset:3px}
+  .tip .safe{display:inline;font-family:var(--f-body);font-style:normal;font-size:14px;font-weight:600;color:var(--ink);margin:0}
+  .step .fuel{margin-top:14px;font-family:var(--f-head);font-style:italic;font-size:18px;color:var(--rose)}
+  .step .credit{margin-top:18px;font-size:13px;color:var(--quiet)}
+  .credit a{color:var(--rose);text-decoration:none;border-bottom:1px solid rgba(180,68,122,.35)}
+  .credit a:hover,.credit a:focus-visible{border-color:var(--rose)}
+  /* the light moves from morning to evening as you go through the day */
+  .sky{position:absolute;inset:0;z-index:-1;background:var(--sky);transition:background-color 1.4s ease;
+    -webkit-mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 60%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 60%,transparent)}
+  .day > *:not(.sky):not(.hop){position:relative}
+  /* the meadow grows along the bottom, one stretch per time of day */
+  .meadow{margin:8px calc(var(--margin) * -1) 0 calc(var(--margin) * -1 - 28px);height:130px;overflow:hidden}
+  .meadow svg{display:block;width:100%;height:100%}
+  .meadow .grow{clip-path:inset(0 calc(100% - var(--reach,12%)) 0 0);transition:clip-path 1s cubic-bezier(.3,.7,.3,1)}
+  .meadow .bloom{transform-box:fill-box;transform-origin:50% 50%;transform:scale(0);transition:transform .6s cubic-bezier(.3,1.6,.5,1)}
+  .meadow .bloom.open{transform:scale(1)}
+  .meadow .stems{transform-box:view-box;transform-origin:0 128px;transition:transform 1.1s cubic-bezier(.3,.7,.3,1)}
+  .meadow .lift{transition:transform 1.1s cubic-bezier(.3,.7,.3,1)}
+  .sample-note{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--quiet);margin:22px 0 0;padding-left:calc(200px + clamp(24px,5vw,72px))}
+
+  @media (max-width:860px){
+    .day{padding-left:var(--margin)}
+    .day-grid{grid-template-columns:1fr;gap:20px}
+    .times-wrap{overflow-x:auto;scrollbar-width:none;margin:0 calc(var(--margin) * -1);padding:26px var(--margin) 4px}
+    .times-wrap::-webkit-scrollbar{display:none}
+    .times{flex-direction:row;gap:6px;width:max-content}
+    .times button{flex-direction:column;gap:2px;padding:10px 14px;align-items:flex-start}
+    .times time{font-size:16px;min-width:0}
+    .times span{font-size:11px;white-space:nowrap}
+    .step{grid-template-columns:1fr;gap:22px}
+    .phone.mini{width:min(64%,240px);aspect-ratio:auto;min-height:180px;max-height:212px;overflow:hidden;padding-bottom:16px;justify-self:center}
+    .day-nav .back{white-space:nowrap;padding-left:6px;padding-right:6px}
+    .day-nav .finish{white-space:nowrap;padding:16px 22px;font-size:14px}
+    .with-cup{justify-self:center;width:100%;display:grid}
+    .with-cup .phone.mini{justify-self:start;margin-left:2%}
+    .with-cup .cup{left:auto;right:-10%;bottom:auto;top:-6px;width:185px}
+    .step .fuel{font-size:16px;margin-top:10px}
+    .step p{font-size:15px;line-height:1.65}
+    .step h3{margin-bottom:8px;font-size:23px}
+    .step{gap:16px}
+    .tip{margin-top:14px;padding:11px 14px}
+    .stage{min-height:0}
+    .day-nav{padding-left:0;justify-content:space-between;gap:8px}
+    .day-nav .count{order:-1;width:100%;display:none}
+    .sample-note{padding-left:0}
+    .price{padding-left:var(--margin)}
+    .entry{transform:none;padding:26px 20px 28px 44px}
+    .tiers{grid-template-columns:1fr}
+    .tier,.tier:first-child{padding:16px 0}
+    .tier + .tier{border-left:0;border-top:1px dashed #D8D3DD}
+    .band{margin-left:calc(var(--margin) * -1);padding-left:var(--margin);padding-right:var(--margin)}
+    .offer-band,.promise-band{grid-template-columns:1fr}
+    .offer-band .btn{width:100%;justify-content:center}
+    .tiers.two{grid-template-columns:1fr}
+    .included ul{columns:1}
+    .entry .btn{width:100%;justify-content:center}
+    .stage{z-index:1}
+    .meadow{height:96px;margin-top:-64px !important;z-index:2;pointer-events:none;margin-left:calc(var(--margin) * -1);margin-right:calc(var(--margin) * -1)}
+  }
+  @media (prefers-reduced-motion:reduce){.btn{transition:none}.lander,.lander img,.perch:hover .lander img,.step,.hop img,.hop.flying img,.hop.landed img{animation:none}.sky,.meadow .grow,.meadow .bloom,.meadow .stems,.meadow .lift{transition:none}.cup .steam path{animation:none;stroke-dasharray:none}}
+</style>
+</head>
+<body>
+<canvas id="wash" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="page">
+  <header>
+    <a class="brand" href="/"><img src="assets/butterfly.png" alt="">Butterfly</a>
+    <nav aria-label="Main">
+      <a href="#day">A day with Butterfly</a>
+      <a href="#amy">Amy's story</a>
+      <a href="#price">Price</a>
+      <a href="#faq">Questions</a>
+    </nav>
+    <p class="today" aria-hidden="true">Today<b data-today-short>Tue 25 Nov</b></p>
+  </header>
+
+  <main class="hero">
+    <p class="margin-note" aria-hidden="true">Today<b data-day>Tue</b><span data-date>25 Nov</span></p>
+
+    <div>
+      <p class="kicker">Made by a cleaner, for your kind of busy</p>
+      <h1>Organise your day, <em>your way.</em></h1>
+      <p class="lede">The diary app for your <strong>bookings, clients, mileage and money</strong>. Built by Amy for her small cleaning business, just like yours.</p>
+      <div class="cta-row">
+        <a class="btn" href="https://jusac-design.github.io/butterfly/">Start your free 30 days<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.9 1.3 5.3 3.2 1.4-1.9 3.1-3.2 5.3-3.2 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg></a>
+        <a class="link perch" href="#amy">Read Amy's story →<span class="lander" aria-hidden="true"><img src="assets/butterfly.png" alt=""></span></a>
+      </div>
+      <p class="small">30 days free. No card required.</p>
+    </div>
+
+    <div class="desk" aria-label="The Butterfly diary on a phone, next to Amy, its founder">
+      <div class="phone" aria-hidden="true">
+        <div class="bar"><b>Diary</b><span data-weeklabel>This week</span></div>
+        <div class="week" data-week>
+          <div>Mon<b>24</b></div><div class="on">Tue<b>25</b></div><div>Wed<b>26</b></div><div>Thu<b>27</b></div><div>Fri<b>28</b></div>
+        </div>
+        <div class="slot"><time>08:30</time><div><b>Mrs H.</b><i>Regular clean · Tyldesley</i><br><span class="tag">Fortnightly</span></div></div>
+        <div class="slot"><time>11:00</time><div><b>The Grange</b><i>Deep reset · Leigh</i><br><span class="tag">Paid</span></div></div>
+        <div class="slot"><time>14:30</time><div><b>New enquiry</b><i>3 bed, weekly · Astley</i><br><span class="tag q">Quote sent</span></div></div>
+        <div class="slot"><time>16:00</time><div><b>Supplies run</b><i>Trip added</i></div></div>
+        <div class="foot"><span>Miles today <b>18.4</b></span><span>Free Thu <b>3h</b></span></div>
+      </div>
+      <figure class="amy">
+        <div class="oval"><img src="assets/amy.jpg" alt="Amy, founder of Butterfly and owner of A.K. Reset &amp; Shine"></div>
+        <figcaption><span class="sig">Amy<img src="assets/butterfly.png" alt=""></span><small>Founder</small></figcaption>
+      </figure>
+      <span class="sample-tag">Sample screen · made-up names</span>
+    </div>
+  </main>
+
+  <div class="switch">
+    <span>Instead of</span>
+    <s>a paper diary</s><s>the Notes app</s><s>WhatsApp threads</s><s>a spreadsheet</s>
+    <span class="to">one calm page.</span>
+  </div>
+
+  <!-- A day with Butterfly: one moment at a time, the butterfly hops to each -->
+  <section class="day" id="day" aria-labelledby="day-title" style="--sky:rgba(247,205,180,.32)">
+    <div class="sky" aria-hidden="true"></div>
+    <span class="hop" aria-hidden="true"><img src="assets/butterfly.png" alt=""></span>
+    <div class="day-head">
+      <p class="kicker">A day with Butterfly</p>
+      <h2 id="day-title">From first enquiry to feet up, <em>sorted.</em></h2>
+    </div>
+
+    <div class="day-grid">
+      <div class="times-wrap">
+        <ol class="times" role="tablist" aria-label="Times of the day">
+          <li><button role="tab" data-step="0"><time>07:30</time><span>Your diary</span></button></li>
+          <li><button role="tab" data-step="1"><time>09:00</time><span>New enquiry</span></button></li>
+          <li><button role="tab" data-step="2"><time>09:15</time><span>Booked in</span></button></li>
+          <li><button role="tab" data-step="3"><time>10:00</time><span>On the road</span></button></li>
+          <li><button role="tab" data-step="4"><time>11:00</time><span>Coffee break</span></button></li>
+          <li><button role="tab" data-step="5"><time>12:30</time><span>Every client</span></button></li>
+          <li><button role="tab" data-step="6"><time>13:00</time><span>Paid</span></button></li>
+          <li><button role="tab" data-step="7"><time>16:00</time><span>Supplies run</span></button></li>
+          <li><button role="tab" data-step="8"><time>18:00</time><span>Feet up</span></button></li>
+        </ol>
+      </div>
+
+      <div class="stage" aria-live="polite">
+        <article class="step" role="tabpanel" data-panel="0">
+          <div class="copy"><h3>Your whole diary, sorted before your first clean.</h3>
+            <p>Butterfly keeps on top of your diary for you. View it by day, week or month, and move a booking or reservation in moments when plans change. Got gaps? Share your availability on your socials with one tap.</p></div>
+          <div class="phone mini"><div class="bar"><b>Diary</b><span>This week</span></div>
+            <div class="seg"><span>Day</span><span class="on">Week</span><span>Month</span></div>
+            <div class="row"><span>Wed</span><b>2h free</b><i>13:00 to 15:00</i></div>
+            <div class="pill" style="margin:6px 4px 10px">Share my availability</div>
+            <div class="row"><span>Thu</span><b>3h free</b><i>Afternoon</i></div>
+            <div class="row"><span>Fri</span><b>Full</b><i>Fully booked</i></div></div>
+        </article>
+        <article class="step" role="tabpanel" data-panel="1" hidden>
+          <div class="copy"><h3>Every enquiry and quote, in one place.</h3>
+            <p>Meet <b class="feature">Cocoon</b>, a new Butterfly feature that keeps track of every enquiry and quote. Write your quote and send it from inside Butterfly, then when a client says yes, turn it straight into a booking.</p></div>
+          <div class="phone mini"><div class="bar"><b>Cocoon</b><span>3 open</span></div>
+            <div class="row"><span>Yes!</span><b>Mr &amp; Mrs D.</b><i>Fortnightly</i></div>
+            <div class="pill" style="margin:4px 4px 12px">Turn into a booking</div>
+            <div class="row"><span>Quote</span><b>3 bed, weekly</b><i>Astley · quote sent</i></div>
+            <div class="row"><span>New</span><b>End of tenancy</b><i>Leigh</i></div></div>
+        </article>
+        <article class="step" role="tabpanel" data-panel="2" hidden>
+          <div class="copy"><h3>Weekly, fortnightly or monthly. Booked in once.</h3>
+            <p>Set how often a client repeats and Butterfly fills your diary. Moving someone around is a breeze.</p></div>
+          <div class="phone mini"><div class="bar"><b>New booking</b><span>Diary</span></div>
+            <div class="row"><span>Client</span><b>Mr &amp; Mrs D.</b><i>Tyldesley</i></div>
+            <div class="row"><span>Repeats</span><b>Every 2 weeks</b><i>Tuesdays, 09:00</i></div>
+            <div class="row"><span>Service</span><b>Regular clean</b><i>2 hours</i></div>
+            <div class="pill">Add to diary</div></div>
+        </article>
+        <article class="step" role="tabpanel" data-panel="3" hidden>
+          <div class="copy"><h3>Your journey, your miles, all recorded for you.</h3>
+            <p>Your day starts and ends at home. At the end of the day, Butterfly works out the miles for every journey and keeps your mileage log ready for your tax return.</p>
+            <details class="tip" open><summary><img src="assets/butterfly.png" alt=""><span><b>Butterfly tip</b>Business miles can lower your tax bill.</span></summary><p>HMRC lets you claim 55p a mile for your first 10,000 business miles each tax year, then 25p a mile. It comes off the profit you pay tax on, and Butterfly keeps the log for you.</p></details></div>
+          <div class="phone mini"><div class="bar"><b>Today's miles</b><span>4 stops</span></div>
+            <div class="row"><span>Start</span><b>Home</b><i></i></div>
+            <div class="row"><span>3.2 mi</span><b>Tyldesley</b><i>09:00</i></div>
+            <div class="row"><span>4.1 mi</span><b>Leigh</b><i>11:30</i></div>
+            <div class="row"><span>3.0 mi</span><b>Home</b><i></i></div>
+            <div class="total">Miles today <b>10.3</b></div></div>
+        </article>
+        <article class="step" role="tabpanel" data-panel="4" hidden>
+          <div class="copy"><h3>Coffee break. Admin done, next clean lined up.</h3>
+            <p>One look shows where you're off to next, your free hours this week and your miles so far. No paperwork to catch up on, just a hot coffee and back on the road.</p>
+            <p class="fuel">Fuelled by coffee. Organised by Butterfly.</p></div>
+          <div class="with-cup">
+            <div class="phone mini"><div class="bar"><b>Today</b><span>11:00</span></div>
+              <div class="row"><span>Next</span><b>The Grange</b><i>11:30 · Leigh</i></div>
+              <div class="row"><span>Free</span><b>5h this week</b><i>Wed and Thu</i></div>
+              <div class="row"><span>Miles</span><b>3.2 so far</b><i>Today's journeys</i></div>
+              <div class="row"><span>Owed</span><b>Nothing</b><i>All paid up</i></div></div>
+            <svg class="cup" viewBox="0 0 340 310" aria-hidden="true"><defs><radialGradient id="porcelain" cx=".42" cy=".38" r=".65"><stop offset=".8" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E4E0E8"/></radialGradient><radialGradient id="foamTop" cx=".48" cy=".46" r=".52"><stop offset="0" stop-color="#FDF8F0"/><stop offset=".72" stop-color="#F4E6D2"/><stop offset=".9" stop-color="#D9AE80"/><stop offset="1" stop-color="#8E5A35"/></radialGradient><radialGradient id="crema" cx=".5" cy=".48" r=".52"><stop offset="0" stop-color="#E7BB8F"/><stop offset=".55" stop-color="#D29F6C"/><stop offset=".88" stop-color="#B07A4B"/><stop offset="1" stop-color="#7C4E2E"/></radialGradient><radialGradient id="milk" cx=".45" cy=".35" r=".7"><stop offset="0" stop-color="#FFFBF4"/><stop offset="1" stop-color="#F1E3CF"/></radialGradient><linearGradient id="handleTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A4752"/><stop offset=".5" stop-color="#2C2A32"/><stop offset="1" stop-color="#1E1C22"/></linearGradient><linearGradient id="gold" x1="0" x2="1"><stop offset="0" stop-color="#B8914E"/><stop offset=".45" stop-color="#F0DDAA"/><stop offset="1" stop-color="#A57D3E"/></linearGradient><radialGradient id="beanFill" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#A8754F"/><stop offset=".5" stop-color="#6A4129"/><stop offset="1" stop-color="#32190E"/></radialGradient><filter id="cocoaDust" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feComponentTransfer in="SourceAlpha" result="a"><feFuncA type="linear" slope="4"/></feComponentTransfer><feGaussianBlur in="a" stdDeviation=".9" result="ab"/><feFlood flood-color="#6B4029" flood-opacity=".55" result="base"/><feComposite in="base" in2="ab" operator="in" result="b1"/><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 .3  0 0 0 0 .17  0 0 0 0 .1  2.2 0 0 0 -.75" result="grain"/><feComposite in="grain" in2="ab" operator="in" result="g1"/><feMerge><feMergeNode in="b1"/><feMergeNode in="g1"/></feMerge></filter><filter id="milkShape" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feComponentTransfer in="SourceAlpha" result="a"><feFuncA type="linear" slope="4"/></feComponentTransfer><feMorphology in="a" operator="dilate" radius="1.3" result="d"/><feFlood flood-color="#B9824F" result="c"/><feComposite in="c" in2="d" operator="in" result="ring"/><feFlood flood-color="#FBF2E4" result="m"/><feComposite in="m" in2="a" operator="in" result="milk"/><feMerge><feMergeNode in="ring"/><feMergeNode in="milk"/></feMerge></filter><filter id="coffeeTint" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 .69  0 0 0 0 .48  0 0 0 0 .29  -1 -1 -1 0 2.55" result="t"/><feComposite in="t" in2="SourceAlpha" operator="in"/></filter><filter id="foam" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation=".55"/></filter><filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"/></filter><filter id="beanShadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="1.4" dy="2.4" stdDeviation="1.3" flood-color="#2A1A12" flood-opacity=".4"/></filter><g id="bean"><ellipse rx="9" ry="6.6" fill="url(#beanFill)"/><path d="M-7.5 .6q3.7-3 7.5 0t7.5-.4" fill="none" stroke="#24120A" stroke-width="1.5" stroke-linecap="round"/><path d="M-7 .2q3.7-2.4 7.5-.2" fill="none" stroke="#C99A6E" stroke-width=".7" opacity=".7"/><ellipse cx="-3.4" cy="-3.2" rx="3.4" ry="1.3" fill="#fff" opacity=".22"/></g></defs><circle cx="128" cy="130" r="96" fill="#3A2A30" opacity=".28" filter="url(#soft)"/><rect x="196" y="106" width="46" height="30" rx="12" fill="#3A2A30" opacity=".25" filter="url(#soft)"/><rect x="194" y="104" width="44" height="30" rx="12" fill="url(#handleTop)"/><rect x="200" y="108" width="32" height="5" rx="2.5" fill="#fff" opacity=".18"/><circle cx="120" cy="120" r="93" fill="url(#porcelain)" stroke="#D8D3DD" stroke-width="1"/><circle cx="120" cy="120" r="86" fill="none" stroke="url(#gold)" stroke-width="2"/><circle cx="120" cy="120" r="82" fill="url(#foamTop)"/><circle cx="51.7" cy="94.6" r="0.8" fill="#8E5A35" opacity="0.64"/><circle cx="185.5" cy="79.2" r="1.0" fill="#8E5A35" opacity="0.42"/><circle cx="77.3" cy="59.7" r="1.5" fill="#8E5A35" opacity="0.61"/><circle cx="66.5" cy="61.4" r="2.2" fill="#8E5A35" opacity="0.36"/><circle cx="56.0" cy="156.2" r="1.0" fill="#8E5A35" opacity="0.50"/><circle cx="82.5" cy="180.8" r="1.5" fill="#8E5A35" opacity="0.71"/><circle cx="62.7" cy="166.5" r="1.8" fill="#8E5A35" opacity="0.38"/><circle cx="171.6" cy="61.1" r="1.8" fill="#8E5A35" opacity="0.50"/><circle cx="185.8" cy="157.0" r="2.1" fill="#8E5A35" opacity="0.44"/><circle cx="103.6" cy="42.4" r="1.9" fill="#8E5A35" opacity="0.62"/><circle cx="194.7" cy="92.3" r="1.8" fill="#8E5A35" opacity="0.50"/><circle cx="69.9" cy="56.7" r="2.1" fill="#8E5A35" opacity="0.48"/><circle cx="105.2" cy="191.9" r="1.2" fill="#8E5A35" opacity="0.36"/><circle cx="193.3" cy="152.8" r="1.6" fill="#8E5A35" opacity="0.65"/><circle cx="183.7" cy="78.2" r="1.0" fill="#8E5A35" opacity="0.43"/><circle cx="70.4" cy="179.9" r="1.3" fill="#8E5A35" opacity="0.70"/><circle cx="50.8" cy="149.1" r="1.2" fill="#8E5A35" opacity="0.65"/><circle cx="192.2" cy="99.6" r="1.5" fill="#8E5A35" opacity="0.45"/><circle cx="61.6" cy="167.8" r="1.3" fill="#8E5A35" opacity="0.51"/><circle cx="47.1" cy="103.1" r="1.1" fill="#8E5A35" opacity="0.42"/><circle cx="134.5" cy="50.5" r="1.5" fill="#8E5A35" opacity="0.58"/><circle cx="152.3" cy="192.2" r="1.1" fill="#8E5A35" opacity="0.65"/><circle cx="47.7" cy="109.0" r="1.3" fill="#8E5A35" opacity="0.53"/><circle cx="83.6" cy="190.3" r="0.9" fill="#8E5A35" opacity="0.43"/><circle cx="41.0" cy="105.4" r="1.4" fill="#8E5A35" opacity="0.59"/><circle cx="168.8" cy="59.4" r="1.5" fill="#8E5A35" opacity="0.64"/><circle cx="173.8" cy="63.2" r="1.0" fill="#8E5A35" opacity="0.60"/><circle cx="179.6" cy="79.7" r="1.2" fill="#8E5A35" opacity="0.70"/><circle cx="180.2" cy="162.5" r="1.7" fill="#8E5A35" opacity="0.67"/><circle cx="131.0" cy="46.8" r="1.9" fill="#8E5A35" opacity="0.65"/><circle cx="95.6" cy="52.5" r="1.2" fill="#8E5A35" opacity="0.37"/><circle cx="80.1" cy="54.6" r="2.0" fill="#8E5A35" opacity="0.49"/><circle cx="57.9" cy="80.2" r="1.1" fill="#8E5A35" opacity="0.63"/><circle cx="106.4" cy="191.9" r="1.7" fill="#8E5A35" opacity="0.74"/><circle cx="184.2" cy="92.0" r="1.4" fill="#8E5A35" opacity="0.61"/><circle cx="186.0" cy="80.4" r="1.1" fill="#8E5A35" opacity="0.42"/><circle cx="161.8" cy="181.3" r="2.0" fill="#8E5A35" opacity="0.67"/><circle cx="73.0" cy="179.1" r="1.8" fill="#8E5A35" opacity="0.68"/><circle cx="178.6" cy="77.6" r="2.0" fill="#8E5A35" opacity="0.37"/><circle cx="47.5" cy="90.5" r="1.4" fill="#8E5A35" opacity="0.36"/><circle cx="185.9" cy="87.6" r="1.7" fill="#8E5A35" opacity="0.37"/><circle cx="58.7" cy="76.5" r="1.9" fill="#8E5A35" opacity="0.51"/><circle cx="177.3" cy="68.0" r="1.8" fill="#8E5A35" opacity="0.68"/><circle cx="135.7" cy="195.0" r="0.9" fill="#8E5A35" opacity="0.42"/><circle cx="196.7" cy="115.6" r="2.0" fill="#8E5A35" opacity="0.73"/><circle cx="45.0" cy="120.6" r="1.8" fill="#8E5A35" opacity="0.53"/><g><image href="butterfly.png" x="52" y="64" width="136" height="115" filter="url(#cocoaDust)" opacity=".72"/><circle cx="188.4" cy="122.0" r="0.82" fill="#5A3522" opacity="0.25"/><circle cx="92.7" cy="85.2" r="0.49" fill="#5A3522" opacity="0.29"/><circle cx="65.3" cy="155.7" r="0.90" fill="#5A3522" opacity="0.36"/><circle cx="151.0" cy="158.9" r="0.51" fill="#5A3522" opacity="0.38"/><circle cx="88.3" cy="154.8" r="0.90" fill="#5A3522" opacity="0.27"/><circle cx="173.1" cy="148.3" r="0.92" fill="#5A3522" opacity="0.38"/><circle cx="128.1" cy="176.4" r="0.63" fill="#5A3522" opacity="0.24"/><circle cx="176.3" cy="147.0" r="0.68" fill="#5A3522" opacity="0.43"/><circle cx="98.3" cy="164.6" r="0.76" fill="#5A3522" opacity="0.37"/><circle cx="157.2" cy="171.7" r="0.92" fill="#5A3522" opacity="0.44"/><circle cx="127.0" cy="182.7" r="0.72" fill="#5A3522" opacity="0.42"/><circle cx="117.1" cy="170.8" r="0.44" fill="#5A3522" opacity="0.30"/><circle cx="83.8" cy="155.9" r="0.85" fill="#5A3522" opacity="0.29"/><circle cx="142.7" cy="167.5" r="0.83" fill="#5A3522" opacity="0.44"/><circle cx="61.9" cy="143.2" r="0.68" fill="#5A3522" opacity="0.26"/><circle cx="56.0" cy="114.4" r="0.70" fill="#5A3522" opacity="0.36"/><circle cx="177.7" cy="101.1" r="0.55" fill="#5A3522" opacity="0.31"/><circle cx="115.7" cy="73.2" r="0.65" fill="#5A3522" opacity="0.47"/><circle cx="70.4" cy="157.2" r="0.74" fill="#5A3522" opacity="0.26"/><circle cx="104.0" cy="77.5" r="0.83" fill="#5A3522" opacity="0.45"/><circle cx="163.3" cy="163.9" r="0.40" fill="#5A3522" opacity="0.30"/><circle cx="90.5" cy="159.0" r="0.76" fill="#5A3522" opacity="0.37"/><circle cx="182.5" cy="121.1" r="0.45" fill="#5A3522" opacity="0.34"/><circle cx="122.1" cy="68.7" r="0.92" fill="#5A3522" opacity="0.23"/><circle cx="172.1" cy="138.8" r="0.56" fill="#5A3522" opacity="0.18"/><circle cx="96.8" cy="77.5" r="0.61" fill="#5A3522" opacity="0.46"/><circle cx="128.6" cy="62.6" r="0.36" fill="#5A3522" opacity="0.21"/><circle cx="90.0" cy="76.4" r="0.82" fill="#5A3522" opacity="0.41"/><circle cx="129.0" cy="71.7" r="0.42" fill="#5A3522" opacity="0.22"/><circle cx="135.7" cy="81.8" r="0.69" fill="#5A3522" opacity="0.38"/><circle cx="61.8" cy="135.7" r="0.36" fill="#5A3522" opacity="0.18"/><circle cx="163.4" cy="161.6" r="0.76" fill="#5A3522" opacity="0.22"/><circle cx="174.8" cy="91.6" r="0.61" fill="#5A3522" opacity="0.24"/><circle cx="120.6" cy="72.2" r="0.91" fill="#5A3522" opacity="0.48"/><circle cx="49.5" cy="122.5" r="0.91" fill="#5A3522" opacity="0.23"/><circle cx="188.2" cy="104.3" r="0.82" fill="#5A3522" opacity="0.41"/><circle cx="164.7" cy="101.1" r="0.78" fill="#5A3522" opacity="0.44"/><circle cx="115.8" cy="172.5" r="0.54" fill="#5A3522" opacity="0.43"/><circle cx="66.9" cy="76.1" r="0.71" fill="#5A3522" opacity="0.20"/><circle cx="81.7" cy="87.4" r="0.41" fill="#5A3522" opacity="0.16"/><circle cx="124.1" cy="171.1" r="0.92" fill="#5A3522" opacity="0.16"/><circle cx="160.4" cy="162.5" r="0.43" fill="#5A3522" opacity="0.40"/><circle cx="115.9" cy="80.2" r="0.74" fill="#5A3522" opacity="0.30"/><circle cx="49.6" cy="136.3" r="0.56" fill="#5A3522" opacity="0.44"/><circle cx="113.4" cy="177.5" r="0.90" fill="#5A3522" opacity="0.25"/><circle cx="119.1" cy="75.4" r="0.38" fill="#5A3522" opacity="0.38"/><circle cx="117.3" cy="164.4" r="0.59" fill="#5A3522" opacity="0.34"/><circle cx="119.8" cy="169.5" r="0.56" fill="#5A3522" opacity="0.34"/><circle cx="172.8" cy="122.5" r="0.82" fill="#5A3522" opacity="0.26"/><circle cx="122.3" cy="77.6" r="0.47" fill="#5A3522" opacity="0.19"/><circle cx="59.5" cy="139.7" r="0.91" fill="#5A3522" opacity="0.42"/><circle cx="117.5" cy="172.6" r="0.76" fill="#5A3522" opacity="0.35"/><circle cx="68.0" cy="117.4" r="0.88" fill="#5A3522" opacity="0.28"/><circle cx="141.0" cy="174.5" r="0.56" fill="#5A3522" opacity="0.35"/><circle cx="184.9" cy="123.2" r="0.78" fill="#5A3522" opacity="0.18"/><circle cx="58.9" cy="145.2" r="0.54" fill="#5A3522" opacity="0.26"/><circle cx="62.9" cy="101.3" r="0.55" fill="#5A3522" opacity="0.29"/><circle cx="186.3" cy="121.2" r="0.55" fill="#5A3522" opacity="0.31"/><circle cx="106.9" cy="66.8" r="0.50" fill="#5A3522" opacity="0.48"/><circle cx="170.1" cy="143.5" r="0.70" fill="#5A3522" opacity="0.35"/><circle cx="73.3" cy="146.8" r="0.55" fill="#5A3522" opacity="0.16"/><circle cx="143.8" cy="84.6" r="0.95" fill="#5A3522" opacity="0.42"/><circle cx="150.3" cy="156.8" r="0.35" fill="#5A3522" opacity="0.15"/><circle cx="165.4" cy="81.2" r="0.71" fill="#5A3522" opacity="0.18"/><circle cx="67.7" cy="148.0" r="0.37" fill="#5A3522" opacity="0.21"/><circle cx="67.8" cy="109.8" r="0.63" fill="#5A3522" opacity="0.29"/><circle cx="143.2" cy="82.1" r="0.39" fill="#5A3522" opacity="0.17"/><circle cx="56.9" cy="156.6" r="0.81" fill="#5A3522" opacity="0.41"/><circle cx="176.8" cy="106.8" r="0.63" fill="#5A3522" opacity="0.30"/><circle cx="176.4" cy="81.4" r="0.42" fill="#5A3522" opacity="0.29"/></g><path d="M58 74A82 82 0 0 1 104 40" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/><g filter="url(#beanShadow)"><use href="#bean" transform="translate(255.1 182.5) rotate(155) scale(1.07)"/><use href="#bean" transform="translate(292.5 184.5) rotate(90) scale(1.06)"/><use href="#bean" transform="translate(286.3 188.5) rotate(70) scale(1.08)"/><use href="#bean" transform="translate(286.7 188.8) rotate(62) scale(1.10)"/><use href="#bean" transform="translate(270.4 189.8) rotate(92) scale(1.23)"/><use href="#bean" transform="translate(257.8 191.0) rotate(17) scale(1.13)"/><use href="#bean" transform="translate(304.9 192.5) rotate(149) scale(1.06)"/><use href="#bean" transform="translate(255.7 195.6) rotate(85) scale(1.22)"/><use href="#bean" transform="translate(229.9 196.6) rotate(1) scale(0.98)"/><use href="#bean" transform="translate(264.6 197.1) rotate(103) scale(1.18)"/><use href="#bean" transform="translate(225.4 198.4) rotate(63) scale(1.12)"/><use href="#bean" transform="translate(241.3 199.1) rotate(85) scale(1.12)"/><use href="#bean" transform="translate(238.5 200.7) rotate(89) scale(1.14)"/><use href="#bean" transform="translate(289.6 202.2) rotate(94) scale(1.03)"/><use href="#bean" transform="translate(243.9 202.2) rotate(7) scale(1.22)"/><use href="#bean" transform="translate(297.3 202.4) rotate(176) scale(0.98)"/><use href="#bean" transform="translate(247.7 202.8) rotate(12) scale(1.23)"/><use href="#bean" transform="translate(257.9 203.1) rotate(69) scale(0.98)"/><use href="#bean" transform="translate(288.2 204.3) rotate(86) scale(1.02)"/><use href="#bean" transform="translate(210.9 204.9) rotate(53) scale(1.19)"/><use href="#bean" transform="translate(219.7 206.9) rotate(12) scale(1.05)"/><use href="#bean" transform="translate(212.5 207.3) rotate(91) scale(1.10)"/><use href="#bean" transform="translate(224.1 208.5) rotate(76) scale(1.15)"/><use href="#bean" transform="translate(226.9 208.5) rotate(177) scale(1.11)"/><use href="#bean" transform="translate(217.4 209.0) rotate(111) scale(0.95)"/><use href="#bean" transform="translate(269.2 209.6) rotate(23) scale(1.09)"/><use href="#bean" transform="translate(293.6 209.7) rotate(90) scale(1.02)"/><use href="#bean" transform="translate(255.1 210.7) rotate(156) scale(1.18)"/><use href="#bean" transform="translate(285.0 210.8) rotate(104) scale(1.16)"/><use href="#bean" transform="translate(282.3 211.2) rotate(101) scale(1.21)"/><use href="#bean" transform="translate(26.0 212.0) rotate(-20) scale(1.00)"/><use href="#bean" transform="translate(242.4 212.9) rotate(25) scale(1.12)"/><use href="#bean" transform="translate(241.6 213.2) rotate(124) scale(1.12)"/><use href="#bean" transform="translate(284.6 214.0) rotate(136) scale(1.00)"/><use href="#bean" transform="translate(239.1 215.7) rotate(131) scale(1.02)"/><use href="#bean" transform="translate(258.9 215.8) rotate(31) scale(1.12)"/><use href="#bean" transform="translate(236.6 216.1) rotate(78) scale(1.16)"/><use href="#bean" transform="translate(250.0 216.7) rotate(13) scale(1.04)"/><use href="#bean" transform="translate(213.5 217.3) rotate(143) scale(1.23)"/><use href="#bean" transform="translate(263.1 217.7) rotate(97) scale(1.08)"/><use href="#bean" transform="translate(217.1 217.7) rotate(155) scale(1.10)"/><use href="#bean" transform="translate(246.3 218.6) rotate(21) scale(1.14)"/><use href="#bean" transform="translate(213.7 220.2) rotate(42) scale(1.03)"/><use href="#bean" transform="translate(259.0 220.5) rotate(10) scale(1.01)"/><use href="#bean" transform="translate(225.6 220.7) rotate(118) scale(1.17)"/><use href="#bean" transform="translate(245.3 221.2) rotate(164) scale(0.99)"/><use href="#bean" transform="translate(246.0 223.1) rotate(132) scale(1.11)"/><use href="#bean" transform="translate(233.0 224.0) rotate(164) scale(1.15)"/><use href="#bean" transform="translate(280.5 224.0) rotate(79) scale(1.09)"/><use href="#bean" transform="translate(264.5 224.7) rotate(3) scale(1.19)"/><use href="#bean" transform="translate(263.0 224.9) rotate(70) scale(1.19)"/><use href="#bean" transform="translate(256.2 224.9) rotate(39) scale(1.16)"/><use href="#bean" transform="translate(294.1 226.4) rotate(161) scale(1.03)"/><use href="#bean" transform="translate(275.4 227.5) rotate(173) scale(1.03)"/><use href="#bean" transform="translate(251.0 228.4) rotate(90) scale(1.04)"/><use href="#bean" transform="translate(223.2 228.6) rotate(155) scale(1.08)"/><use href="#bean" transform="translate(253.1 228.7) rotate(110) scale(0.99)"/><use href="#bean" transform="translate(213.4 229.0) rotate(18) scale(1.05)"/><use href="#bean" transform="translate(219.1 229.5) rotate(129) scale(1.19)"/><use href="#bean" transform="translate(266.7 230.3) rotate(24) scale(0.99)"/><use href="#bean" transform="translate(233.6 232.2) rotate(112) scale(1.12)"/><use href="#bean" transform="translate(234.4 233.0) rotate(167) scale(1.02)"/><use href="#bean" transform="translate(215.1 233.1) rotate(141) scale(1.19)"/><use href="#bean" transform="translate(244.8 234.3) rotate(89) scale(1.14)"/><use href="#bean" transform="translate(281.1 235.2) rotate(126) scale(1.17)"/><use href="#bean" transform="translate(44.0 236.0) rotate(30) scale(1.00)"/><use href="#bean" transform="translate(280.1 236.2) rotate(26) scale(1.14)"/><use href="#bean" transform="translate(210.9 236.5) rotate(171) scale(1.17)"/><use href="#bean" transform="translate(239.7 238.0) rotate(162) scale(1.05)"/><use href="#bean" transform="translate(298.0 238.5) rotate(33) scale(1.12)"/><use href="#bean" transform="translate(232.2 240.7) rotate(139) scale(1.06)"/><use href="#bean" transform="translate(224.3 241.6) rotate(18) scale(1.19)"/><use href="#bean" transform="translate(273.0 244.4) rotate(23) scale(1.01)"/><use href="#bean" transform="translate(285.6 244.8) rotate(154) scale(1.16)"/><use href="#bean" transform="translate(274.5 245.3) rotate(75) scale(1.05)"/><use href="#bean" transform="translate(272.0 245.8) rotate(142) scale(1.18)"/><use href="#bean" transform="translate(277.4 248.6) rotate(84) scale(1.24)"/><use href="#bean" transform="translate(218.6 249.9) rotate(154) scale(1.08)"/><use href="#bean" transform="translate(277.9 251.4) rotate(179) scale(1.18)"/><use href="#bean" transform="translate(76.0 252.0) rotate(-40) scale(1.00)"/><use href="#bean" transform="translate(222.4 254.1) rotate(114) scale(0.95)"/><use href="#bean" transform="translate(236.4 255.3) rotate(134) scale(1.18)"/><use href="#bean" transform="translate(271.6 255.4) rotate(156) scale(1.20)"/><use href="#bean" transform="translate(229.6 257.5) rotate(173) scale(1.18)"/><use href="#bean" transform="translate(260.0 259.4) rotate(170) scale(1.21)"/><use href="#bean" transform="translate(255.0 259.9) rotate(3) scale(1.05)"/><use href="#bean" transform="translate(208.9 261.3) rotate(111) scale(0.96)"/><use href="#bean" transform="translate(216.6 261.4) rotate(1) scale(0.95)"/><use href="#bean" transform="translate(150.0 262.0) rotate(15) scale(1.00)"/><use href="#bean" transform="translate(256.4 263.3) rotate(44) scale(1.22)"/><use href="#bean" transform="translate(243.9 267.6) rotate(30) scale(1.06)"/><use href="#bean" transform="translate(216.1 270.2) rotate(0) scale(1.15)"/><use href="#bean" transform="translate(216.3 273.4) rotate(85) scale(1.15)"/><use href="#bean" transform="translate(222.7 277.9) rotate(91) scale(1.02)"/></g></svg>
+          </div>
+        </article>
+        <article class="step" role="tabpanel" data-panel="5" hidden>
+          <div class="copy"><h3>Every client, just the way they like it.</h3>
+            <p>Note each client's preferred days and the little things that matter to them, and add before and after photos of your clean, perfect for your socials.</p>
+            <details class="tip" open><summary><img src="assets/butterfly.png" alt=""><span><b>Client not in? No problem.</b>Key-safe codes are kept secure.</span></summary><p>Only you can see your key-safe codes, and they never appear in a message or a download. Tap <i>I've arrived</i> and <i>I've finished</i> and Butterfly writes the message to your client for you.</p><p><b class="safe">Working alone?</b> Choose someone to keep in the loop, and Butterfly writes their <i>arrived safely</i> and <i>left safely</i> messages too.</p></details></div>
+          <div class="phone mini"><div class="bar"><b>Mrs H.</b><span>Client</span></div>
+            <div class="row"><span>Visits</span><b>Fortnightly</b><i>Tuesday mornings</i></div>
+            <div class="row"><span>Notes</span><b>Dog-friendly products</b><i></i></div>
+            <div class="row"><span>Key safe</span><b>••••</b><i>Kept private</i></div>
+            <div class="row"><span>Photos</span><b>Before and after</b><i>Great for your socials</i></div></div>
+        </article>
+        <article class="step" role="tabpanel" data-panel="6" hidden>
+          <div class="copy"><h3>Get paid your way, and know what's still to come in.</h3>
+            <p>When a clean is done, Butterfly writes your client a message with how you'd like to be paid: your bank details for a transfer, or your own payment link, such as Monzo. Mark each clean paid by cash or bank transfer, and anything still owed goes on your <b class="feature">To collect</b> list, so nothing slips by.</p></div>
+          <div class="phone mini"><div class="bar"><b>Money</b><span>This week</span></div>
+            <div class="row"><span>To collect</span><b>£40</b><i>Mrs H. · Tuesday</i></div>
+            <div class="pill" style="margin:6px 4px 10px">Send my payment details</div>
+            <div class="row"><span>Paid</span><b>£240</b><i>6 cleans · cash and transfer</i></div>
+            <div class="row"><span>Expenses</span><b>£18.40</b><i>Supplies</i></div></div>
+        </article>
+        <article class="step" role="tabpanel" data-panel="7" hidden>
+          <div class="copy"><h3>The odd supplies run counts too.</h3>
+            <p>Add a trip or an expense by hand in seconds, so every mile and every bottle of spray is on record.</p></div>
+          <div class="phone mini"><div class="bar"><b>Trip added</b><span>Today</span></div>
+            <div class="row"><span>Trip</span><b>Supplies run</b><i>There and back · 4.2 mi</i></div>
+            <div class="row"><span>Expense</span><b>Cleaning products</b><i>£18.40</i></div></div>
+        </article>
+        <article class="step" role="tabpanel" data-panel="8" hidden>
+          <div class="copy"><h3>Feet up. Your day is sorted.</h3>
+            <p>Your week, money and tax year at a glance. Butterfly keeps your income, expenses and miles as digital records to help you prepare for <b class="feature">Making Tax Digital</b>, ready to export for your accountant, Xero or QuickBooks.</p>
+            <details class="tip" open><summary><img src="assets/butterfly.png" alt=""><span><b>Butterfly tip</b>Making Tax Digital is arriving in stages.</span></summary><p>If your income from self-employment (and any property) is over £50,000, you've needed it since 6 April 2026. Over £30,000 joins from 6 April 2027, and over £20,000 from 6 April 2028. It counts your income before expenses, not your profit. You keep digital records and send HMRC a short update every quarter, using compatible software. <a href="https://www.gov.uk/government/collections/making-tax-digital-for-income-tax" target="_blank" rel="noopener">Check if it applies to you on GOV.UK</a></p></details></div>
+          <div class="phone mini"><div class="bar"><b>Summary</b><span>Tax year</span></div>
+            <div class="row"><span>Income</span><b>£6,420</b><i>So far</i></div>
+            <div class="pill" style="margin:6px 4px 10px">Export my records</div>
+            <div class="row"><span>Expenses</span><b>£512</b><i>So far</i></div>
+            <div class="row"><span>Miles</span><b>1,204</b><i>So far</i></div></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="meadow" aria-hidden="true"><svg viewBox="0 0 1200 110" preserveAspectRatio="xMidYMax slice"></svg></div>
+
+    <div class="day-nav">
+      <button class="back" type="button">← Back</button>
+      <span class="count" aria-hidden="true"><b>1</b> of 9</span>
+      <button class="next" type="button">Next: <span>09:00</span> →</button>
+      <a class="btn finish" href="https://jusac-design.github.io/butterfly/" hidden>Start your free 30 days<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.9 1.3 5.3 3.2 1.4-1.9 3.1-3.2 5.3-3.2 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg></a>
+    </div>
+    <p class="sample-note">Sample screens · made-up names and figures</p>
+  </section>
+
+  <!-- Amy's story -->
+  <section class="story" id="amy" aria-labelledby="story-title">
+    <figure class="story-photo">
+      <div class="oval"><img src="assets/amy.jpg" alt="Amy, founder of Butterfly and owner of A.K. Reset &amp; Shine" loading="lazy"></div>
+      <figcaption><span class="sig">Amy<img src="assets/butterfly.png" alt=""></span><small>Founder, Astley</small></figcaption>
+    </figure>
+    <div class="story-copy">
+      <p class="kicker">Amy's story</p>
+      <h2 id="story-title">From the classroom to her own cleaning business, <em>and Butterfly.</em></h2>
+      <p class="intro">Amy switched from a career in teaching to a small, successful cleaning business.</p>
+      <blockquote>
+        <p>My dad could see I had the itch the summer before. School holidays were too long not to be doing something meaningful, so I left teaching and just did it. My family and friends were so supportive.</p>
+        <p>I have amazing clients and I grew really quickly. Soon, keeping track of weekly, fortnightly and monthly cleans was really hard. Add promoting yourself on social media, like every small business owner has to, and it was all quite intense.</p>
+        <p>So I created my Butterfly App. It cut my admin right down, so I can get on with the job I love. Moving clients around is a breeze, and it keeps a record of every mile, even the odd run for supplies.</p>
+      </blockquote>
+      <p class="pull">“I spend far less time on admin. It pretty much does it all for me.”</p>
+      <a class="link" href="https://www.instagram.com/a.kresetandshine/" target="_blank" rel="noopener">See A.K. Reset &amp; Shine on Instagram →</a>
+    </div>
+  </section>
+
+  <!-- Price: one plan, no tiers. Free trial and what's included first, then the offer, then the promise -->
+  <section class="price" id="price" aria-labelledby="price-title">
+    <div class="head">
+      <p class="kicker">Price</p>
+      <h2 id="price-title">One plan. <em>Everything in it.</em></h2>
+      <p>No tiers, no gimmicks, no surprises. Just honest, hard-working tools for the everyday tasks of running your cleaning business, at a price that stays fair.</p>
+    </div>
+
+    <div class="entry">
+      <span class="date" aria-hidden="true">Your plan</span>
+      <div class="free-top">
+        <div>
+          <p class="when">Your first 30 days</p>
+          <p class="amount">Free</p>
+        </div>
+        <p class="nocard"><b>No card required.</b> Sign up and use the app straight away.</p>
+      </div>
+
+      <div class="included">
+        <h3>Everything's included</h3>
+        <ul class="ticks">
+          <li>Diary and calendar by day, week or month</li>
+          <li>Book and reserve cleans, and move dates in moments</li>
+          <li>Weekly, fortnightly and monthly repeats, booked in once</li>
+          <li>Share your availability on your socials in one tap</li>
+          <li>Enquiries and quotes in Cocoon, turned into bookings</li>
+          <li>Client details, preferred days, notes and photos</li>
+          <li>Key-safe codes kept secure, for you only</li>
+          <li>Arrived and finished messages, written for you</li>
+          <li>Safety check-ins when you work alone</li>
+          <li>Get paid your way, with a To collect list</li>
+          <li>Mileage worked out for you at the end of each day</li>
+          <li>Expenses and your tax year at a glance</li>
+          <li>Digital records to help you prepare for Making Tax Digital</li>
+          <li>Sync your bookings to your phone or desktop calendar</li>
+          <li>You own your data: download it and take it with you, any time</li>
+          <li><b>UK help and support, with a reply within 1 working day</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="band offer-band">
+      <div class="offer-copy">
+        <span class="tag">Early offer</span>
+        <h3>50% off, for as long as you stay.</h3>
+        <p class="offer-price"><s>£19.95</s> <b>£9.95</b><small>a month</small></p>
+        <p>Choose a plan during your 30-day free trial and you'll pay half price every month, for as long as you stay subscribed. Join after your trial and it's £19.95 a month.</p>
+        <p class="offer-pay"><b>How you pay after your trial:</b> a monthly Direct Debit through GoCardless, protected by the Direct Debit Guarantee. It's easy to cancel any time, and its low fees help us keep Butterfly affordable for everyone.</p>
+        <p class="offer-fine">No VAT to add. Cancel any time and keep using Butterfly until the end of the month you've paid for.</p>
+        <p class="offer-leave"><b>Not for you? That's absolutely fine.</b> Your records are always yours. When your trial ends, everything is kept safe and readable for 90 days, so you can download it all and take it with you, or join whenever you're ready.</p>
+      </div>
+      <div class="offer-cta">
+        <a class="btn pinkbtn perch" href="https://jusac-design.github.io/butterfly/">Start your free 30 days<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.9 1.3 5.3 3.2 1.4-1.9 3.1-3.2 5.3-3.2 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg><span class="lander later" aria-hidden="true"><img src="assets/butterfly.png" alt=""></span></a>
+        <p class="offer-nocard">No card required</p>
+      </div>
+    </div>
+
+    <div class="band promise-band">
+      <div class="promise-head">
+        <img src="assets/butterfly.png" alt="">
+        <p class="kicker">The Butterfly promise</p>
+        <h3>Built with you, <em>not just for you.</em></h3>
+      </div>
+      <div class="promise-copy">
+        <p>Every improvement to Butterfly starts with you, our customers. Message us from inside the app with what would make your week easier, and we'll build what helps the most. And we'll keep it affordable.</p>
+        <ul class="vows">
+          <li>A fair price that stays fair</li>
+          <li>Your ideas shape every update</li>
+          <li>UK support, with a reply within 1 working day</li>
+        </ul>
+        <p class="sig">“If it works for me, it can work for you too.” <span>Amy</span></p>
+      </div>
+    </div>
+  </section>
+  <!-- Questions -->
+  <section class="faq" id="faq" aria-labelledby="faq-title">
+    <div class="faq-head">
+      <p class="kicker">Questions</p>
+      <h2 id="faq-title">Good to <em>know.</em></h2>
+    </div>
+    <div class="faq-list">
+      <details><summary>Do I need a card to start?</summary><p>No. Sign up and use everything free for 30 days. You only set up a payment if you decide to stay.</p></details>
+      <details><summary>What happens when my free trial ends?</summary><p>If you choose a plan during your trial, you pay £9.95 a month for as long as you stay. If you don’t, Butterfly turns read-only and nothing is lost: your records are kept safe for 90 days, so you can download them or join whenever you’re ready.</p></details>
+      <details><summary>How do I pay?</summary><p>By monthly Direct Debit through GoCardless, protected by the Direct Debit Guarantee. There’s no VAT to add, and you can cancel any time.</p></details>
+      <details><summary>Can I cancel any time?</summary><p>Yes. You keep using Butterfly until the end of the month you’ve paid for, and you can download all your data to take with you.</p></details>
+      <details><summary>Can I bring my existing bookings with me?</summary><p>Yes. Bring your current calendar in once from a calendar file (Google, Apple or Outlook), and your Butterfly bookings can show in your phone or desktop calendar too.</p></details>
+      <details><summary>Is my clients’ information safe?</summary><p>Your records are yours and only you can see them. Key-safe codes never appear in a message or a download, and the Butterfly team can only look at your account if you let them.</p></details>
+      <details><summary>Does it work on my phone?</summary><p>Yes. Butterfly works in your phone’s web browser and you can add it to your home screen, so it opens just like an app. It works on a tablet or computer too.</p></details>
+      <details><summary>Is Butterfly only for cleaners?</summary><p>Butterfly started with cleaning, because that’s Amy’s world. Mobile hairdressers and beauty therapists are next, and we’d love to hear from you if that’s you.</p></details>
+      <details><summary>How do I get help?</summary><p>Message us from inside the app, or email hello@butterflyapp.co.uk. Our UK team replies within 1 working day.</p></details>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="foot-brand">
+      <a class="brand" href="/"><img src="assets/butterfly.png" alt="">Butterfly</a>
+      <p>Organise your day, your way. Made in the UK by Amy, a cleaner from Astley.</p>
+    </div>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="https://jusac-design.github.io/butterfly/">Start your free 30 days</a>
+      <a href="https://jusac-design.github.io/butterfly/">Sign in</a>
+      <a href="mailto:hello@butterflyapp.co.uk">hello@butterflyapp.co.uk</a>
+      <a href="https://jusac-design.github.io/butterfly/terms.html">Terms</a>
+      <a href="https://jusac-design.github.io/butterfly/privacy.html">Privacy</a>
+    </nav>
+    <p class="foot-small">© 2026 Butterfly. App screens on this page are samples with made-up names and figures.</p>
+  </footer>
+
+</div>
+
+<script>
+/* Today's date, like a diary page: margin note, phone header and the sample week. */
+(() => {
+  const now = new Date(), d = now.getDay();
+  const day = now.toLocaleDateString('en-GB', {weekday: 'short'});
+  const date = now.toLocaleDateString('en-GB', {day: 'numeric', month: 'short'});
+  document.querySelector('[data-day]').textContent = day;
+  document.querySelector('[data-date]').textContent = date;
+  document.querySelector('[data-today-short]').textContent = `${day} ${date}`;
+  // Monday of this week (or next week at the weekend), Monday to Friday
+  const mon = new Date(now); mon.setDate(now.getDate() - ((d + 6) % 7) + (d === 0 || d === 6 ? 7 : 0));
+  const on = d === 0 || d === 6 ? 0 : d - 1;
+  if (d === 0 || d === 6) document.querySelector('[data-weeklabel]').textContent = 'Next week';
+  document.querySelector('[data-week]').innerHTML = [0,1,2,3,4].map(i => {
+    const t = new Date(mon); t.setDate(mon.getDate() + i);
+    return `<div${i === on ? ' class="on"' : ''}>${t.toLocaleDateString('en-GB',{weekday:'short'})}<b>${t.getDate()}</b></div>`;
+  }).join('');
+})();
+
+/* Watercolour on diary paper.
+   Ruled silver lines that ripple softly near the pointer, and soft washes in wing colours
+   that bloom where the pointer has been, then fade. Still for reduced motion. */
+(() => {
+  const c = document.getElementById('wash'), x = c.getContext('2d');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wings = ['232,139,181','201,182,236','247,205,180','181,226,208','184,211,242'];
+  let W, H, dpr, splats = [], ci = 0, raf = 0;
+  const p = {x: -999, y: -999, tx: -999, ty: -999, lx: 0, ly: 0, active: false};
+  const LINE = 34;
+
+  function size(){
+    dpr = Math.min(devicePixelRatio || 1, 1.5);
+    W = innerWidth; H = innerHeight;
+    c.width = W * dpr; c.height = H * dpr; x.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function splat(sx, sy, big){
+    splats.push({x:sx, y:sy, r: big ? 260 + Math.random()*120 : 120 + Math.random()*90,
+      c: wings[ci++ % wings.length], age: 0, life: big ? 99999 : 5200 + Math.random()*2000, a: big ? .2 : .2});
+    if (splats.length > 70) splats.splice(splats.findIndex(s => s.life < 99999), 1);
+  }
+  function seed(){
+    splats = [];
+    splat(W*.78, H*.28, true); splat(W*.62, H*.82, true); splat(W*.12, H*.9, true);
+  }
+  function draw(dt){
+    x.clearRect(0,0,W,H);
+    x.globalCompositeOperation = 'multiply';
+    for (let i = splats.length - 1; i >= 0; i--){
+      const s = splats[i]; s.age += dt;
+      const t = Math.min(s.age / s.life, 1);
+      if (t >= 1){ splats.splice(i,1); continue; }
+      const bloom = s.life > 9e4 ? 1 : .55 + .45 * Math.min(s.age/900, 1);
+      const alpha = s.life > 9e4 ? s.a : s.a * (1 - t) * Math.min(s.age/400, 1);
+      const r = s.r * bloom, g = x.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
+      g.addColorStop(0, `rgba(${s.c},${alpha})`);
+      g.addColorStop(.55, `rgba(${s.c},${alpha*.45})`);
+      g.addColorStop(1, `rgba(${s.c},0)`);
+      x.fillStyle = g; x.beginPath(); x.arc(s.x, s.y, r, 0, 6.2832); x.fill();
+    }
+    x.globalCompositeOperation = 'source-over';
+    // ruled lines
+    x.lineWidth = 1; x.strokeStyle = 'rgba(160,158,172,.28)';
+    const sig = 150, amp = p.active ? 5 : 0;
+    for (let y = LINE * 2.5; y < H; y += LINE){
+      x.beginPath();
+      for (let X = 0; X <= W; X += 18){
+        const dx = X - p.x, dy = y - p.y, d2 = dx*dx + dy*dy;
+        const off = amp ? amp * Math.exp(-d2/(2*sig*sig)) * Math.sin(dx/26 + performance.now()/700) : 0;
+        X ? x.lineTo(X, y + off) : x.moveTo(X, y + off);
+      }
+      x.stroke();
+    }
+    // planner margin rule (desktop)
+    if (W > 860){
+      const m = Math.min(Math.max(W*.07,20),96);
+      x.strokeStyle = 'rgba(232,139,181,.45)'; x.beginPath(); x.moveTo(m, 0); x.lineTo(m, H); x.stroke();
+    }
+  }
+  let last = performance.now(), ambient = 0;
+  function loop(now){
+    const dt = Math.min(now - last, 50); last = now;
+    p.x += (p.tx - p.x) * .06; p.y += (p.ty - p.y) * .06;
+    if (p.active && Math.hypot(p.x - p.lx, p.y - p.ly) > 70){ splat(p.x, p.y); p.lx = p.x; p.ly = p.y; }
+    ambient += dt;
+    if (!p.active && ambient > 1800){ ambient = 0; splat(Math.random()*W, Math.random()*H); }
+    draw(dt);
+    raf = requestAnimationFrame(loop);
+  }
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    if (!p.active){ p.x = p.tx = p.lx = e.clientX; p.y = p.ty = p.ly = e.clientY; }
+    p.active = true; p.tx = e.clientX; p.ty = e.clientY;
+  }, {passive:true});
+  document.addEventListener('mouseleave', () => { p.active = false; });
+  addEventListener('resize', () => { size(); seed(); if (still) draw(0); });
+  document.addEventListener('visibilitychange', () => {
+    if (still) return;
+    if (document.hidden) cancelAnimationFrame(raf); else { last = performance.now(); raf = requestAnimationFrame(loop); }
+  });
+  size(); seed();
+  if (still) draw(0); else raf = requestAnimationFrame(loop);
+})();
+
+/* A day with Butterfly: one moment at a time. The butterfly is the helper:
+   it hops up and lands on each time as you move through the day. */
+(() => {
+  const day = document.querySelector('.day');
+  const wrap = day.querySelector('.times-wrap');
+  const tabs = [...day.querySelectorAll('.times button')];
+  const panels = [...day.querySelectorAll('.step')];
+  const hop = day.querySelector('.hop');
+  const back = day.querySelector('.back'), next = day.querySelector('.next'), finish = day.querySelector('.finish');
+  const count = day.querySelector('.count b');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let cur = 0, pos = null, seen = false, lastLeft = 0;
+
+  tabs.forEach((t, i) => { t.id = 'tab-' + i; panels[i].setAttribute('aria-labelledby', t.id); });
+
+  // the butterfly waits one step ahead: on the next time, or on the trial button at the end of the day
+  function spot(i){
+    const last = i === tabs.length - 1;
+    const t = last ? finish : tabs[i + 1].querySelector('time');
+    const r = t.getBoundingClientRect(), d = day.getBoundingClientRect();
+    if (last) return {x: r.right - d.left - 22, y: r.top - d.top - 20};
+    // phones: the row of times scrolls, so sit at the start of the time where it is always in view
+    if (wrap.scrollWidth > wrap.clientWidth) return {x: r.left - d.left - 16, y: r.top - d.top - 22};
+    return {x: r.right - d.left - 6, y: r.top - d.top - 18};
+  }
+  const tf = (p, r = 0) => `translate(${p.x}px, ${p.y}px) rotate(${r}deg)`;
+
+  function land(i, from){
+    const to = spot(i);
+    if (still || !from){ hop.style.transform = tf(to); pos = to; return; }
+    const mid = {x: (from.x + to.x) / 2 + 10, y: Math.min(from.y, to.y) - 46};
+    hop.getAnimations().forEach(a => a.cancel());
+    hop.classList.remove('landed'); hop.classList.add('flying');
+    hop.animate([{transform: tf(from)}, {transform: tf(mid, -14), offset: .45}, {transform: tf(to)}],
+      {duration: 720, easing: 'cubic-bezier(.3,.7,.3,1)'}).onfinish = () => {
+        hop.classList.remove('flying'); void hop.offsetWidth; hop.classList.add('landed');
+      };
+    hop.style.transform = tf(to);
+    pos = to;
+  }
+
+  function go(i, focusTab){
+    i = Math.max(0, Math.min(tabs.length - 1, i));
+    tabs.forEach((t, n) => { t.setAttribute('aria-selected', n === i); t.tabIndex = n === i ? 0 : -1; });
+    panels.forEach((p, n) => p.hidden = n !== i);
+    panels[i].style.animation = 'none'; void panels[i].offsetWidth; panels[i].style.animation = '';
+    count.textContent = i + 1;
+    back.disabled = i === 0;
+    const last = i === tabs.length - 1;
+    next.hidden = last; finish.hidden = !last;
+    if (!last) next.querySelector('span').textContent = tabs[i + 1].querySelector('time').textContent;
+    // keep the chosen time in view on phones
+    if (wrap.scrollWidth > wrap.clientWidth)
+      wrap.scrollTo({left: tabs[i].offsetLeft - 20, behavior: 'auto'});
+    lastLeft = wrap.scrollLeft;
+    if (seen) land(i, pos);
+    if (focusTab) tabs[i].focus();
+    cur = i;
+    growMeadow(i);
+  }
+
+  // morning to evening: one light per time of day
+  const skies = ['rgba(247,205,180,.32)','rgba(250,226,170,.28)','rgba(184,211,242,.26)','rgba(184,211,242,.32)','rgba(236,214,190,.34)',
+                 'rgba(181,226,208,.28)','rgba(232,139,181,.11)','rgba(247,205,180,.34)','rgba(201,182,236,.34)'];
+
+  // a line-drawn meadow along the bottom of the diary page. It spreads along and grows taller
+  // as the day goes on, with a mix of flowers in the wing colours.
+  // Drawn to the width of the screen (same pattern every time), so the growing edge is always in view.
+  const svg = day.querySelector('.meadow svg'), NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); p && p.appendChild(e); return e; };
+  const H = 130, BASE = 128;
+  const colours = ['#E88BB5','#D86A9A','#F29B83','#F6D27A','#B9A2E6','#9D86D6','#8FB8E8','#9ED6BE','#F7C4A5'];
+  const stemCol = 'rgba(112,160,134,.7)';
+  let grow = null, stems = null, blooms = [], builtW = 0;
+
+  function flower(type, x, top, col, rnd, g){
+    if (type === 'daisy'){
+      for (let p = 0; p < 9; p++){
+        const a = p / 9 * 360;
+        el('ellipse', {cx: x, cy: top - 4.6, rx: 1.6, ry: 4.2, fill: '#fff', stroke: 'rgba(190,186,198,.8)', 'stroke-width': .5, transform: `rotate(${a} ${x} ${top})`}, g);
+      }
+      el('circle', {cx: x, cy: top, r: 2.4, fill: '#F6D27A'}, g);
+    } else if (type === 'tulip'){
+      el('path', {d: `M${x - 5} ${top - 2}C${x - 6} ${top + 6} ${x + 6} ${top + 6} ${x + 5} ${top - 2}L${x + 3} ${top - 8}L${x} ${top - 3}L${x - 3} ${top - 8}Z`, fill: col}, g);
+      el('path', {d: `M${x - 2.5} ${top - 4}C${x - 3} ${top + 2} ${x - 1} ${top + 3} ${x} ${top + 3}`, stroke: '#fff', 'stroke-width': .8, fill: 'none', opacity: .5}, g);
+    } else if (type === 'spike'){
+      for (let p = 0; p < 6; p++) el('ellipse', {cx: x + (p % 2 ? 1.6 : -1.6), cy: top + p * 3.4, rx: 2, ry: 2.8, fill: col, opacity: .9 - p * .08}, g);
+    } else if (type === 'cluster'){
+      [[-4, 2], [3, -1], [0, -6]].forEach(([dx, dy]) => {
+        for (let p = 0; p < 4; p++){ const a = p / 4 * Math.PI * 2 + .4; el('circle', {cx: x + dx + Math.cos(a) * 1.8, cy: top + dy + Math.sin(a) * 1.8, r: 1.6, fill: col}, g); }
+        el('circle', {cx: x + dx, cy: top + dy, r: .9, fill: '#F6D27A'}, g);
+      });
+    } else {
+      const r = 3.4 + rnd() * 2.2;
+      for (let p = 0; p < 5; p++){
+        const a = p / 5 * Math.PI * 2 + rnd() * .3;
+        el('circle', {cx: x + Math.cos(a) * r, cy: top + Math.sin(a) * r, r: r * .85, fill: col, opacity: .9}, g);
+      }
+      el('circle', {cx: x, cy: top, r: r * .45, fill: '#FBE7A6'}, g);
+    }
+  }
+
+  function buildMeadow(){
+    const box = svg.getBoundingClientRect();
+    const W = Math.max(300, Math.round(H * box.width / Math.max(box.height, 1)));
+    if (Math.abs(W - builtW) < 4) return;
+    builtW = W; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'none');
+    svg.textContent = ''; blooms = [];
+    let seedN = 7; const rnd = () => (seedN = (seedN * 16807) % 2147483647) / 2147483647;
+    grow = el('g', {class: 'grow'}, svg);
+    el('path', {d: `M0 ${BASE} H${W}`, stroke: 'rgba(160,158,172,.5)', 'stroke-width': 1, fill: 'none'}, grow);
+    stems = el('g', {class: 'stems'}, grow);
+    for (let k = 0, n = Math.round(W / 4.6); k < n; k++){
+      const x = rnd() * W, h = 16 + rnd() * 46, lean = (rnd() - .5) * 20;
+      el('path', {d: `M${x} ${BASE} Q${x + lean * .3} ${BASE - h * .6} ${x + lean} ${BASE - h}`,
+        stroke: rnd() > .6 ? 'rgba(112,160,134,.55)' : 'rgba(150,148,160,.42)', 'stroke-width': .9, fill: 'none', 'stroke-linecap': 'round'}, stems);
+    }
+    const heads = el('g', {}, grow);
+    const types = ['round','daisy','tulip','spike','round','cluster','tulip','daisy','spike','round'];
+    for (let k = 0, n = Math.max(12, Math.round(W / 30)); k < n; k++){
+      const x = 12 + (k / n) * (W - 24) + (rnd() - .5) * 18, h = 48 + rnd() * 66, top = BASE - h;
+      const sway = (rnd() - .5) * 10;
+      el('path', {d: `M${x} ${BASE} Q${x + sway} ${BASE - h / 2} ${x} ${top}`, stroke: stemCol, 'stroke-width': 1.1, fill: 'none'}, stems);
+      if (rnd() > .45){ const ly = BASE - h * (.25 + rnd() * .3), side = rnd() > .5 ? 1 : -1;
+        el('ellipse', {cx: x + side * 4.5, cy: ly, rx: 4.8, ry: 1.7, fill: 'rgba(130,180,150,.75)', transform: `rotate(${side * -30} ${x + side * 4.5} ${ly})`}, stems); }
+      const lift = el('g', {class: 'lift'}, heads);
+      const g = el('g', {class: 'bloom'}, lift);
+      flower(types[k % types.length], x, top, colours[(k * 4) % colours.length], rnd, g);
+      g.style.transitionDelay = (rnd() * .35).toFixed(2) + 's';
+      blooms.push({g, lift, h, at: x / W});
+    }
+    growMeadow(cur);
+  }
+
+  function growMeadow(i){
+    day.style.setProperty('--sky', skies[i]);
+    if (!grow) return;
+    const reach = (i + 1) / tabs.length;
+    const tall = .38 + .62 * (i / (tabs.length - 1));   // short in the morning, full height by the evening
+    grow.style.setProperty('--reach', (reach * 100).toFixed(1) + '%');
+    stems.style.transform = `scaleY(${tall})`;
+    blooms.forEach(b => {
+      b.g.classList.toggle('open', b.at <= reach + .01);
+      b.lift.style.transform = `translateY(${(b.h * (1 - tall)).toFixed(1)}px)`;
+    });
+  }
+  addEventListener('resize', buildMeadow);
+  buildMeadow();
+
+  tabs.forEach((t, i) => t.addEventListener('click', () => go(i)));
+  back.addEventListener('click', () => go(cur - 1));
+  next.addEventListener('click', () => go(cur + 1));
+  day.querySelector('.times').addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); go(cur + 1, true); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp'){ e.preventDefault(); go(cur - 1, true); }
+  });
+  // swipe on phones
+  let sx = null;
+  const stage = day.querySelector('.stage');
+  stage.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive: true});
+  stage.addEventListener('touchend', e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 50) go(cur + (dx < 0 ? 1 : -1));
+  });
+  const settle = () => { if (seen){ hop.getAnimations().forEach(a => a.cancel()); hop.classList.remove('flying'); land(cur); } };
+  addEventListener('resize', settle);
+  // fonts and photos arriving can move the times: put the butterfly back on its time
+  document.fonts && document.fonts.ready.then(settle);
+  new ResizeObserver(() => { if (!hop.classList.contains('flying')) settle(); }).observe(day);
+  // someone swiping the row of times: keep the butterfly on its time
+  wrap.addEventListener('scroll', () => { if (Math.abs(wrap.scrollLeft - lastLeft) > 1){ lastLeft = wrap.scrollLeft; settle(); } }, {passive: true});
+
+  // first time the section comes into view, the butterfly flies in and lands on 07:30
+  hop.style.opacity = 0;
+  new IntersectionObserver((entries, obs) => {
+    if (!entries[0].isIntersecting) return;
+    obs.disconnect(); seen = true; hop.style.opacity = 1;
+    const to = spot(cur);
+    land(cur, still ? null : {x: to.x + 140, y: to.y - 160});
+  }, {threshold: .35}).observe(day);
+
+  go(0);
+})();
+
+/* butterflies that wait: they fly in when their section comes into view */
+document.querySelectorAll('.lander.later').forEach(l => {
+  new IntersectionObserver((e, o) => { if (e[0].isIntersecting){ l.classList.add('go'); o.disconnect(); } }, {threshold: .9}).observe(l.parentElement);
+});
+if (matchMedia('(max-width: 860px)').matches) document.querySelectorAll('details.tip').forEach(d => d.open = false);
+</script>
+</body>
+</html>
