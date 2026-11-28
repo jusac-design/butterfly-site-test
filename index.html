@@ -161,6 +161,8 @@
   .faq-list details[open] summary::after{transform:rotate(45deg)}
   .faq-list summary:focus-visible{outline:2px solid var(--rose);outline-offset:4px;border-radius:6px}
   .faq-list details p{margin:0 0 18px;font-size:16px;line-height:1.75;font-weight:300;max-width:62ch}
+  .faq-list details ol{margin:0 0 12px;padding-left:22px;font-size:16px;line-height:1.75;font-weight:300;max-width:62ch}
+  .faq-list details ol li{margin-bottom:4px}
   /* Footer */
   .foot{border-top:1px solid rgba(198,198,206,.8);padding:40px var(--margin) 36px calc(var(--margin) + 28px);display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,1.4fr);gap:20px 40px;align-items:start;background:rgba(255,255,255,.5)}
   .foot-brand p{margin:10px 0 0;font-size:14px;color:var(--quiet);max-width:40ch;line-height:1.6}
@@ -689,6 +691,7 @@
       <h2 id="faq-title">Good to <em>know.</em></h2>
     </div>
     <div class="faq-list">
+      <details><summary>Where do I start?</summary><p>Four quick steps and you’re ready to fly:</p><ol><li>In Settings, add your bank details, working hours and price list.</li><li>Add your clients.</li><li>Add your cleans to the Diary.</li><li>Send your first reminder by WhatsApp, text or another app. Butterfly writes it for you.</li></ol><p>You’ll find the same guide in the app, under Settings, then Help.</p></details>
       <details><summary>Do I need a card to start?</summary><p>No. Sign up and use everything free for 30 days. You only set up a payment if you decide to stay.</p></details>
       <details><summary>What happens when my free trial ends?</summary><p>Choose your plan before your 30 days are up and it’s only £9.95 a month, for as long as you stay. If you don’t, Butterfly turns read-only and nothing is lost: your records are kept safe for 90 days, so you can download them or join whenever you’re ready.</p></details>
       <details><summary>How do I pay?</summary><p>By monthly Direct Debit through GoCardless, protected by the Direct Debit Guarantee. There’s no VAT to add, and you can cancel any time.</p></details>
